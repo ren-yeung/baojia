@@ -89,9 +89,24 @@
 
 {% block extra_scripts %}
 <script>
+function isWeworkBrowser() {
+    var ua = navigator.userAgent.toLowerCase();
+    return ua.indexOf('wxwork') !== -1 || ua.indexOf('micromessenger') !== -1;
+}
+
 function downloadPdf(btn) {
     btn.disabled = true;
-    btn.textContent = '下载中...';
+    btn.textContent = '加载中...';
+
+    if (isWeworkBrowser()) {
+        window.location.href = '/{{ quote.id }}/pdf?inline=1';
+        setTimeout(function() {
+            btn.disabled = false;
+            btn.textContent = '查看PDF';
+        }, 1500);
+        return;
+    }
+
     fetch('/{{ quote.id }}/pdf')
         .then(function(resp) {
             if (!resp.ok) throw new Error('download failed');
