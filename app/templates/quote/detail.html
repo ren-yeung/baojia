@@ -21,10 +21,12 @@
         <span class="detail-label">To</span>
         <span class="detail-value">{{ quote.customer_name }}</span>
     </div>
+    
     <div class="detail-row">
         <span class="detail-label">Fr</span>
-        <span class="detail-value">{{ quote.brand.fr_company }}</span>
+        <span class="detail-value">{{ quote.fr_company or quote.brand.fr_company }}</span>
     </div>
+    
     <div class="detail-row">
         <span class="detail-label">有效期</span>
         <span class="detail-value">{{ quote.validity }}</span>
@@ -39,6 +41,7 @@
 
 <div class="card">
     <div class="card-title">服务明细</div>
+    
     <div style="overflow-x:auto; margin: 0 -4px;">
         <table class="detail-table">
             <thead>
@@ -65,6 +68,7 @@
             </tbody>
         </table>
     </div>
+    
     <div class="total-bar">
         <span class="total-label">合计</span>
         <span class="total-amount">{{ quote.total_display }}</span>
@@ -80,5 +84,24 @@
 {% endblock %}
 
 {% block bottom %}
-<a href="/{{ quote.id }}/pdf" class="btn btn-primary" style="flex:1; text-decoration:none;">下载PDF</a>
+<button class="btn btn-primary" style="flex:1;" id="btn-download" onclick="downloadPdf(this)">下载PDF</button>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function downloadPdf(btn) {
+    btn.disabled = true;
+    btn.textContent = '下载中...';
+    var a = document.createElement('a');
+    a.href = '/{{ quote.id }}/pdf';
+    a.download = '';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function() {
+        btn.disabled = false;
+        btn.textContent = '下载PDF';
+    }, 3000);
+}
+</script>
 {% endblock %}
