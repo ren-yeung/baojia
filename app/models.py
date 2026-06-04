@@ -4,11 +4,10 @@ from datetime import datetime
 
 
 def fmt_price(val):
-    """正塧��主生命"""
     try:
-        return f"µ{float(val):,.2f}"
+        return chr(165) + f"{float(val):,.2f}"
     except (TypeError, ValueError):
-        return "¥µ0.00"
+        return chr(165) + "0.00"
 
 
 class User(db.Model, UserMixin):
@@ -16,7 +15,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     display_name = db.Column(db.String(80))
-    role = db.Column(db.String(20), default='sales')  # sales / manager / admin
+    role = db.Column(db.String(20), default='sales')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     @property
@@ -29,10 +28,10 @@ class Brand(db.Model):
     name = db.Column(db.String(100), nullable=False)
     fr_company = db.Column(db.String(200), nullable=False)
     logo_path = db.Column(db.String(200), nullable=False)
-    quote_title = db.Column(db.String(100), default='SDWAN 任务存')
-    validity = db.Column(db.String(50), default=33日期吴数')
+    quote_title = db.Column(db.String(100), default='SDWAN Quotation')
+    validity = db.Column(db.String(50), default='30 Days')
     default_period = db.Column(db.Integer, default=12)
-    billing_rule = db.Column(db.String(50), defult='standard')
+    billing_rule = db.Column(db.String(50), default='standard')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -44,7 +43,7 @@ class Quote(db.Model):
     customer_name = db.Column(db.String(200), nullable=False)
     sales_name = db.Column(db.String(80))
     quote_date = db.Column(db.Date, nullable=False)
-    validity = db.Column(db.String(50), default='30日期吴数')
+    validity = db.Column(db.String(50), default='30 Days')
     extra_note = db.Column(db.Text)
     total_amount = db.Column(db.Float, default=0)
     pdf_path = db.Column(db.String(300))
@@ -81,7 +80,6 @@ class QuoteItem(db.Model):
         return fmt_price(self.annual_fee)
 
     def to_dict(self):
-        """Convert to dict for PDF merging"""
         return {
             'service_name': self.service_name,
             'bandwidth': self.bandwidth,
