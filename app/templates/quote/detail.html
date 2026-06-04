@@ -89,48 +89,43 @@
 
 {% block extra_scripts %}
 <script>
-var _pdfBlobUrl = null;
-
 function isWeworkBrowser() {
     var ua = navigator.userAgent.toLowerCase();
     return ua.indexOf('wxwork') !== -1 || ua.indexOf('micromessenger') !== -1;
 }
 
 function downloadPdf(btn) {
-    if (_pdfBlobUrl && isWeworkBrowser()) {
-        window.location.href = _pdfBlobUrl;
+    if (isWeworkBrowser()) {
+        btn.textContent = '打开中...';
+        window.location.href = '/{{ quote.id }}/pdf?inline=1';
+        setTimeout(function() {
+            btn.textContent = '查看PDF';
+        }, 2000);
         return;
     }
 
     btn.disabled = true;
     btn.textContent = '下载中...';
 
-    fetch('/{{ quote.id }}/pdf' + (isWeworkBrowser() ? '?inline=1' : ''))
+    fetch('/{{ quote.id }}/pdf')
         .then(function(resp) {
             if (!resp.ok) throw new Error('download failed');
             return resp.blob();
         })
         .then(function(blob) {
-            if (isWeworkBrowser()) {
-                _pdfBlobUrl = window.URL.createObjectURL(blob);
-                btn.disabled = false;
-                btn.textContent = '查看PDF';
-                window.location.href = _pdfBlobUrl;
-            } else {
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = '{{ quote.quote_no }}.pdf';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-                btn.disabled = false;
-                btn.textContent = '下载PDF';
-            }
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '{{ quote.quote_no }}.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
         })
         .catch(function(err) {
             alert('PDF download failed: ' + err.message);
+        })
+        .finally(function() {
             btn.disabled = false;
             btn.textContent = '下载PDF';
         });
