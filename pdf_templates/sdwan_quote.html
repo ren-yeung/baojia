@@ -13,8 +13,8 @@ body { font-family: "PingFang SC", "Microsoft YaHei", "SimHei", sans-serif; font
 .title { font-size: 22px; font-weight: bold; text-align: center; margin: 20px 0 24px; letter-spacing: 2px; }
 
 .info-section { margin-bottom: 20px; }
-.info-row { display: flex; justify-content: center; margin-bottom: 6px; font-size: 13px; line-height: 1.8; }
-.info-label { font-weight: bold; min-width: 90px; color: #333; text-align: right; }
+.info-row { display: flex; margin-bottom: 6px; font-size: 13px; line-height: 1.8; }
+.info-label { font-weight: bold; min-width: 90px; color: #333; }
 .info-value { color: #333; }
 
 table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
@@ -92,7 +92,7 @@ tr.total-row td { background: #f0f4f8; font-weight: bold; font-size: 13px; }
         {% endfor %}
         <tr class="total-row">
             <td colspan="3" style="text-align:right; font-weight:bold;">合计</td>
-            <td colspan="3" style="text-align:right; color:#1a365d; font-size:14px;">{{ total | format_price }}</td>
+            <td colspan="3" style="text-align:center; color:#1a365d; font-size:14px;">{{ total | format_price }}</td>
         </tr>
     </tbody>
 </table>
