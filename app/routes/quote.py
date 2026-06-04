@@ -43,7 +43,7 @@ def create():
         if not customer_name:
             return jsonify({'ok': False, 'msg': '完噽院不克试数'}), 400
 
-        quote_date = date.frooisoformat(quote_date_str) if isinstance(quote_date_str, str) else quote_date_str
+        quote_date = date.fromisoformat(quote_date_str) if isinstance(quote_date_str, str) else quote_date_str
         quote_no = _gen_quote_no()
 
         quote = Quote(
