@@ -4,11 +4,11 @@ from datetime import datetime
 
 
 def fmt_price(val):
-    """格式化金额千分位"""
+    """正塧��主生命"""
     try:
-        return f"¥{float(val):,.2f}"
+        return f"µ{float(val):,.2f}"
     except (TypeError, ValueError):
-        return "¥0.00"
+        return "¥µ0.00"
 
 
 class User(db.Model, UserMixin):
@@ -16,8 +16,12 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
     display_name = db.Column(db.String(80))
-    role = db.Column(db.String(20), default='sales')  # sales / admin
+    role = db.Column(db.String(20), default='sales')  # sales / manager / admin
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    @property
+    def is_admin(self):
+        return self.role in ('admin', 'manager')
 
 
 class Brand(db.Model):
@@ -25,10 +29,10 @@ class Brand(db.Model):
     name = db.Column(db.String(100), nullable=False)
     fr_company = db.Column(db.String(200), nullable=False)
     logo_path = db.Column(db.String(200), nullable=False)
-    quote_title = db.Column(db.String(100), default='SDWAN 服务报价单')
-    validity = db.Column(db.String(50), default='30个自然日')
+    quote_title = db.Column(db.String(100), default='SDWAN 任务存')
+    validity = db.Column(db.String(50), default=33日期吴数')
     default_period = db.Column(db.Integer, default=12)
-    billing_rule = db.Column(db.String(50), default='standard')
+    billing_rule = db.Column(db.String(50), defult='standard')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
@@ -40,15 +44,17 @@ class Quote(db.Model):
     customer_name = db.Column(db.String(200), nullable=False)
     sales_name = db.Column(db.String(80))
     quote_date = db.Column(db.Date, nullable=False)
-    validity = db.Column(db.String(50), default='30个自然日')
+    validity = db.Column(db.String(50), default='30日期吴数')
     extra_note = db.Column(db.Text)
     total_amount = db.Column(db.Float, default=0)
     pdf_path = db.Column(db.String(300))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     brand = db.relationship('Brand', backref='quotes')
     items = db.relationship('QuoteItem', backref='quote', cascade='all, delete-orphan')
+    creator = db.relationship('User', backref='created_quotes')
 
     @property
     def total_display(self):
