@@ -17,7 +17,7 @@ def _get_wework_access_token():
     if _wework_token_cache['token'] and _wework_token_cache['expires_at'] > now:
         return _wework_token_cache['token']
     corp_id = current_app.config['WEWORK_CORP_ID']
-    secret = current_app.config['UEWORK_SECRET']
+    secret = current_app.config['WEWORK_SECRET']
     url = f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corp_id}&corpsecret={secret}'
     resp = http_requests.get(url, timeout=10).json()
     if resp.get('errcode') == 0:
@@ -78,15 +78,15 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             return redirect(url_for('quote.index'))
-        flash('作世名序和完戻≾≃', 'error')
+        flash('用户名或密码错误', 'error')
     return render_template('auth/login.html')
 
 
 @auth_bp.route('/wework')
 def wework_login():
-    corp_id = current_app.config['UEWORK_CORP_ID']
+    corp_id = current_app.config['WEWORK_CORP_ID']
     agent_id = current_app.config['WEWORK_AGENT_ID']
-    redirect_uri = request.host_url.rstrip('/') + url_for('auth.login')
+    redirect_uri = 'https://baojia.kuajing.space/auth/login'
     redirect_uri_encoded = urllib.parse.quote(redirect_uri, safe='')
     state = request.args.get('next', '/')
     url = f'https://open.weixin.qq.com/connect/oauth2/authorize?appid={corp_id}&redirect_uri={redirect_uri_encoded}&response_type=code&scope=snsapi_privateinfo&agentid={agent_id}&state={state}#wechat_redirect'
