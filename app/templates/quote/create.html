@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% set bottom_buttons = true %}
+{% block title %}新建报价单{% endblock %}
+{% block nav_title %}新建报价单{% endblock %}
+{% set back_url = '/' %}
+
+{% block content %}
+<!-- Step 1: 选择品牌 -->
+<div id="step-brand" class="card">
+    <div class="card-title">① 选择报价品牌</div>
+    <div class="brand-grid">
+        {% for brand in brands %}
+        <div class="brand-card" data-brand-id="{{ brand.id }}" onclick="selectBrand(this, {{ brand.id }}, '{{ brand.fr_company }}', '{{ brand.validity }}', {{ brand.default_period }})">
+            <div style="position:relative;">
+                <div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
+            </div>
+            <div class="brand-logo">
+                <img src="/static/{{ brand.logo_path }}" style="width:100%;height:100%;object-fit:contain;" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=font-size:24px;line-height:48px>{{ brand.name[:1] }}</div>'">
+            </div>
+            <div class="brand-name">{{ brand.name }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Step 2: 基本信息 -->
+<div id="step-info" class="card" style="display:none;">
+    <div class="card-title">② 基本信息</div>
+    <div class="form-group">
+        <label class="form-label">To 客户名称 <span class="required">*</span></label>
+        <input type="text" id="customer_name" class="form-input" placeholder="如：佛山深盾智能科技有限公司">
+    </div>
+    <div class="form-group">
+        <label class="form-label">Fr 报价方</label>
+        <input type="text" id="fr_company" class="form-input" readonly style="background:var(--gray-50);color:var(--gray-600);">
+    </div>
+    <div class="form-group">
+        <label class="form-label">报价日期</label>
+        <input type="date" id="quote_date" class="form-input" value="{{ today }}">
+    </div>
+    <div class="form-group">
+        <label class="form-label">报价有效期</label>
+        <input type="text" id="validity" class="form-input" value="30个自然日">
+    </div>
+    <div class="form-group">
+        <label class="form-label">销售姓名</label>
+        <input type="text" id="sales_name" class="form-input" placeholder="选填" value="{{ current_user.display_name or '' }}">
+    </div>
+</div>
+
+<!-- Step 3: 服务明细 -->
+<div id="step-items" class="card" style="display:none;">
+    <div class="card-title">③ 服务明细</div>
+    <div id="items-container"></div>
+    <button type="button" class="btn btn-outline btn-block" style="margin-top:8px;" onclick="addItem()">
+        + 添加服务明细
+    </button>
+    <div class="total-bar" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--gray-200);">
+        <span class="total-label">合计</span>
+        <span class="total-amount" id="total-amount">¥0.00</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block bottom %}
+<button class="btn btn-outline" style="flex:1;" onclick="location.href='/'">取消</button>
+<button class="btn btn-primary" style="flex:2;" id="btn-submit" onclick="submitQuote()" disabled>生成报价单</button>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+let selectedBrandId = null;
+let itemCounter = 0;
+
+function selectBrand(el, brandId, frCompany, validity, defaultPeriod) {
+    document.querySelectorAll('.brand-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedBrandId = brandId;
+    document.getElementById('fr_company').value = frCompany;
+    document.getElementById('validity').value = validity;
+    window._defaultPeriod = defaultPeriod;
+    // 显示下一步
+    document.getElementById('step-info').style.display = '';
+    document.getElementById('step-items').style.display = '';
+    document.getElementById('btn-submit').disabled = false;
+    // 自动添加第一行
+    if (itemCounter === 0) addItem();
+}
+
+function addItem() {
+    const idx = itemCounter++;
+    const container = document.getElementById('items-container');
+    const period = window._defaultPeriod || 12;
+    const html = `
+    <div class="item-card" id="item-${idx}">
+        <div class="item-header">
+            <span class="item-index">明细 #${idx + 1}</span>
+            <span class="item-delete" onclick="removeItem(${idx})">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </span>
+        </div>
+        <div class="item-row">
+            <div class="item-field">
+                <label>服务内容</label>
+                <input type="text" name="service_name" placeholder="如：美国定位加速服务">
+            </div>
+        </div>
+        <div class="item-row">
+            <div class="item-field narrow">
+                <label>带宽Mbps</label>
+                <input type="number" name="bandwidth" placeholder="50">
+            </div>
+            <div class="item-field">
+                <label>月租(元/月)</label>
+                <input type="number" name="monthly_price" step="0.01" placeholder="0.00" oninput="calcRow(${idx})">
+            </div>
+        </div>
+        <div class="item-row">
+            <div class="item-field narrow">
+                <label>周期(月)</label>
+                <input type="number" name="period" value="${period}" oninput="calcRow(${idx})">
+            </div>
+            <div class="item-field">
+                <label>年服务费(元/年)</label>
+                <input type="text" name="annual_fee" class="auto-calc" readonly value="¥0.00">
+            </div>
+        </div>
+        <div class="item-row">
+            <div class="item-field">
+                <label>备注</label>
+                <input type="text" name="remark" placeholder="选填">
+            </div>
+        </div>
+    </div>`;
+    container.insertAdjacentHTML('beforeend', html);
+}
+
+function removeItem(idx) {
+    const el = document.getElementById(`item-${idx}`);
+    if (el) { el.remove(); calcTotal(); }
+}
+
+function calcRow(idx) {
+    const card = document.getElementById(`item-${idx}`);
+    if (!card) return;
+    const monthly = parseFloat(card.querySelector('[name=monthly_price]').value) || 0;
+    const period = parseInt(card.querySelector('[name=period]').value) || 0;
+    const annual = monthly * period;
+    card.querySelector('[name=annual_fee]').value = `¥${annual.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+    calcTotal();
+}
+
+function calcTotal() {
+    let total = 0;
+    document.querySelectorAll('.item-card').forEach(card => {
+        const monthly = parseFloat(card.querySelector('[name=monthly_price]').value) || 0;
+        const period = parseInt(card.querySelector('[name=period]').value) || 0;
+        total += monthly * period;
+    });
+    document.getElementById('total-amount').textContent = `¥${total.toLocaleString('zh-CN', {minimumFractionDigits:2, maximumFractionDigits:2})}`;
+}
+
+function getItemsData() {
+    const items = [];
+    document.querySelectorAll('.item-card').forEach((card, i) => {
+        const monthly = parseFloat(card.querySelector('[name=monthly_price]').value) || 0;
+        const period = parseInt(card.querySelector('[name=period]').value) || 0;
+        items.push({
+            service_name: card.querySelector('[name=service_name]').value.trim(),
+            bandwidth: card.querySelector('[name=bandwidth]').value || null,
+            monthly_price: monthly,
+            period: period,
+            annual_fee: monthly * period,
+            remark: card.querySelector('[name=remark]').value.trim(),
+            sort_order: i
+        });
+    });
+    return items;
+}
+
+function submitQuote() {
+    const customerName = document.getElementById('customer_name').value.trim();
+    if (!selectedBrandId) { showToast('请选择报价品牌'); return; }
+    if (!customerName) { showToast('请填写客户名称'); return; }
+
+    const items = getItemsData();
+    if (items.length === 0) { showToast('请添加至少一条服务明细'); return; }
+    if (!items[0].service_name) { showToast('请填写服务内容'); return; }
+
+    const data = {
+        brand_id: selectedBrandId,
+        customer_name: customerName,
+        sales_name: document.getElementById('sales_name').value.trim(),
+        quote_date: document.getElementById('quote_date').value,
+        validity: document.getElementById('validity').value.trim(),
+        items: items
+    };
+
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = '生成中...';
+
+    fetch('/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token() }}' },
+        body: JSON.stringify(data)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.ok) {
+            location.href = '/' + res.id;
+        } else {
+            showToast(res.msg || '创建失败');
+            btn.disabled = false;
+            btn.textContent = '生成报价单';
+        }
+    })
+    .catch(err => {
+        showToast('网络错误');
+        btn.disabled = false;
+        btn.textContent = '生成报价单';
+    });
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+{% endblock %}

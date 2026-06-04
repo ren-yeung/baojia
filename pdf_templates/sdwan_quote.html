@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+@page { size: A4; margin: 2cm 2.5cm; }
+body { font-family: "PingFang SC", "Microsoft YaHei", "SimHei", sans-serif; font-size: 12px; color: #333; }
+
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.logo { height: 44px; max-width: 180px; object-fit: contain; }
+.header-right { text-align: right; font-size: 11px; color: #666; }
+
+.title { font-size: 22px; font-weight: bold; text-align: center; margin: 20px 0 24px; letter-spacing: 2px; }
+
+.info-section { margin-bottom: 20px; }
+.info-row { display: flex; margin-bottom: 6px; font-size: 13px; line-height: 1.8; }
+.info-label { font-weight: bold; min-width: 70px; color: #333; }
+.info-value { color: #333; }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+th { background: #f0f4f8; padding: 10px 8px; text-align: center; font-size: 12px; font-weight: bold; border: 1px solid #333; color: #333; }
+td { padding: 10px 8px; text-align: center; font-size: 12px; border: 1px solid #333; color: #333; vertical-align: middle; }
+td.text-left { text-align: left; }
+td.text-right { text-align: right; }
+td.price { font-weight: bold; color: #1a365d; }
+tr.total-row td { background: #f0f4f8; font-weight: bold; font-size: 13px; }
+
+.footer { margin-top: 40px; font-size: 12px; color: #666; }
+.footer-right { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <img class="logo" src="file://{{ logo_abs }}">
+</div>
+
+<div class="title">{{ brand.quote_title }}</div>
+
+<div class="info-section">
+    <div class="info-row">
+        <span class="info-label">To：</span>
+        <span class="info-value">{{ quote.customer_name }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">Fr：</span>
+        <span class="info-value">{{ brand.fr_company }}</span>
+    </div>
+    <div class="info-row">
+        <span class="info-label">报价有效期：</span>
+        <span class="info-value">{{ quote.validity }}</span>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width:28%;">服务内容</th>
+            <th style="width:12%;">带宽<br>Mbps</th>
+            <th style="width:16%;">月租<br>（元/月）</th>
+            <th style="width:12%;">服务周期<br>（月）</th>
+            <th style="width:18%;">年服务费<br>（元/年）</th>
+            <th style="width:14%;">备注</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in items %}
+        <tr>
+            <td class="text-left">{% if item.show_name %}{{ item.service_name }}{% endif %}</td>
+            <td>{{ item.bandwidth if item.bandwidth else '' }}</td>
+            <td class="text-right">{{ item.monthly_price | format_price }}</td>
+            <td>{{ item.period }}</td>
+            <td class="text-right price">{{ item.annual_fee | format_price }}</td>
+            <td class="text-left" style="font-size:11px; color:#666;">{{ item.remark }}</td>
+        </tr>
+        {% endfor %}
+        <tr class="total-row">
+            <td colspan="3" style="text-align:right; font-weight:bold;">合计</td>
+            <td colspan="3" style="text-align:right; color:#1a365d; font-size:14px;">{{ total | format_price }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<div class="footer">
+    <div class="footer-right">报价日期：{{ quote.quote_date.strftime('%Y年%m月%d日') }}</div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set bottom_buttons = true %}
+{% block title %}报价单详情{% endblock %}
+{% block nav_title %}{{ quote.quote_no }}{% endblock %}
+{% set back_url = '/' %}
+
+{% block extra_css %}
+<style>
+.price-cell { font-weight: 600; color: var(--brand-dark); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <span class="tag tag-brand">{{ quote.brand.name }}</span>
+        <span style="font-size:13px; color:var(--gray-400);">{{ quote.quote_date.strftime('%Y-%m-%d') }}</span>
+    </div>
+
+    <div class="detail-row">
+        <span class="detail-label">To</span>
+        <span class="detail-value">{{ quote.customer_name }}</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">Fr</span>
+        <span class="detail-value">{{ quote.brand.fr_company }}</span>
+    </div>
+    <div class="detail-row">
+        <span class="detail-label">有效期</span>
+        <span class="detail-value">{{ quote.validity }}</span>
+    </div>
+    {% if quote.sales_name %}
+    <div class="detail-row">
+        <span class="detail-label">销售</span>
+        <span class="detail-value">{{ quote.sales_name }}</span>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="card-title">服务明细</div>
+    <div style="overflow-x:auto; margin: 0 -4px;">
+        <table class="detail-table">
+            <thead>
+                <tr>
+                    <th>服务内容</th>
+                    <th>带宽</th>
+                    <th>月租</th>
+                    <th>周期</th>
+                    <th>年服务费</th>
+                    <th>备注</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in merged_items %}
+                <tr>
+                    <td class="text-left">{{ item.service_name if item.show_name else '' }}</td>
+                    <td>{% if item.bandwidth %}{{ item.bandwidth }}M{% endif %}</td>
+                    <td class="text-right">{{ item.monthly_display }}</td>
+                    <td>{{ item.period }}月</td>
+                    <td class="text-right price-cell">{{ item.annual_display }}</td>
+                    <td class="text-left" style="font-size:12px;color:var(--gray-500);">{{ item.remark or '' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="total-bar">
+        <span class="total-label">合计</span>
+        <span class="total-amount">{{ quote.total_display }}</span>
+    </div>
+</div>
+
+{% if quote.extra_note %}
+<div class="card">
+    <div class="card-title">备注</div>
+    <div style="font-size:14px; color:var(--gray-600);">{{ quote.extra_note }}</div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block bottom %}
+<a href="/{{ quote.id }}/pdf" class="btn btn-primary" style="flex:1; text-decoration:none;">下载PDF</a>
+{% endblock %}

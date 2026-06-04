@@ -1,0 +1,9 @@
+__pycache__
+*.pyc
+.git
+.env
+data/
+pdf_output/
+nginx/ssl/
+test_app.py
+.venv/

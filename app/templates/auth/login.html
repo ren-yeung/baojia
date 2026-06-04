@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}登录{% endblock %}
+
+{% block content %}
+<div style="padding: 60px 24px 24px;">
+    <div style="text-align: center; margin-bottom: 48px;">
+        <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
+        <div style="font-size: 22px; font-weight: 700; color: var(--gray-900);">报价系统</div>
+        <div style="font-size: 14px; color: var(--gray-400); margin-top: 4px;">OgCloud</div>
+    </div>
+
+    <div class="card">
+        <div class="form-group">
+            <label class="form-label">用户名</label>
+            <input type="text" name="username" class="form-input" placeholder="请输入用户名" required autofocus>
+        </div>
+        <div class="form-group">
+            <label class="form-label">密码</label>
+            <input type="password" name="password" class="form-input" placeholder="请输入密码" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top: 8px;" onclick="doLogin()">登 录</button>
+    </div>
+</div>
+
+<script>
+function doLogin() {
+    const username = document.querySelector('[name=username]').value.trim();
+    const password = document.querySelector('[name=password]').value;
+    if (!username || !password) { showToast('请填写用户名和密码'); return; }
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/auth/login';
+    const csrf = document.createElement('input');
+    csrf.type = 'hidden'; csrf.name = 'csrf_token'; csrf.value = '{{ csrf_token() }}';
+    form.appendChild(csrf);
+    ['username','password'].forEach(n => {
+        const input = document.createElement('input');
+        input.type = 'hidden'; input.name = n; input.value = document.querySelector(`[name=${n}]`).value;
+        form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+}
+</script>
+{% endblock %}

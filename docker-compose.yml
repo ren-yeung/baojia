@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./pdf_output:/app/pdf_output
+      - ./app/static/logos:/app/app/static/logos
+    environment:
+      - SECRET_KEY=change-this-to-a-random-string
+      - FLASK_ENV=production
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - web
+    restart: unless-stopped
