@@ -92,16 +92,28 @@
 function downloadPdf(btn) {
     btn.disabled = true;
     btn.textContent = '下载中...';
-    var a = document.createElement('a');
-    a.href = '/{{ quote.id }}/pdf';
-    a.download = '';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function() {
-        btn.disabled = false;
-        btn.textContent = '下载PDF';
-    }, 3000);
+    fetch('/{{ quote.id }}/pdf')
+        .then(function(resp) {
+            if (!resp.ok) throw new Error('download failed');
+            return resp.blob();
+        })
+        .then(function(blob) {
+            var url = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = '{{ quote.quote_no }}.pdf';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(function(err) {
+            alert('PDF download failed: ' + err.message);
+        })
+        .finally(function() {
+            btn.disabled = false;
+            btn.textContent = '下载PDF';
+        });
 }
 </script>
 {% endblock %}
