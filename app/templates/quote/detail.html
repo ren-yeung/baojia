@@ -95,39 +95,36 @@ function isWeworkBrowser() {
 }
 
 function downloadPdf(btn) {
-    if (isWeworkBrowser()) {
-        btn.textContent = '打开中...';
-        window.location.href = '/{{ quote.id }}/pdf?inline=1';
-        setTimeout(function() {
-            btn.textContent = '查看PDF';
-        }, 2000);
-        return;
-    }
-
     btn.disabled = true;
-    btn.textContent = '下载中...';
+    btn.textContent = isWeworkBrowser() ? '打开中...' : '下载中...';
 
-    fetch('/{{ quote.id }}/pdf')
+    fetch('/{{ quote.id }}/pdf' + (isWeworkBrowser() ? '?inline=1' : ''))
         .then(function(resp) {
             if (!resp.ok) throw new Error('download failed');
             return resp.blob();
         })
         .then(function(blob) {
-            var url = window.URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.href = url;
-            a.download = '{{ quote.quote_no }}.pdf';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+            if (isWeworkBrowser()) {
+                window.location.href = '/{{ quote.id }}/pdf?inline=1';
+                btn.textContent = '查看PDF';
+            } else {
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = '{{ quote.quote_no }}.pdf';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                btn.textContent = '下载PDF';
+            }
         })
         .catch(function(err) {
             alert('PDF download failed: ' + err.message);
+            btn.textContent = '下载PDF';
         })
         .finally(function() {
             btn.disabled = false;
-            btn.textContent = '下载PDF';
         });
 }
 </script>
