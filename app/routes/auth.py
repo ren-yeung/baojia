@@ -16,7 +16,7 @@ def _get_wework_access_token():
     now = time.time()
     if _wework_token_cache['token'] and _wework_token_cache['expires_at'] > now:
         return _wework_token_cache['token']
-    corp_id = current_app.config['WEWORK_CORP_ID']
+    corp_id = current_app.config['WEWORK_CORPID']
     secret = current_app.config['WEWORK_SECRET']
     url = f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corp_id}&corpsecret={secret}'
     resp = http_requests.get(url, timeout=10).json()
@@ -24,18 +24,23 @@ def _get_wework_access_token():
         _wework_token_cache['token'] = resp['access_token']
         _wework_token_cache['expires_at'] = now + resp.get('expires_in', 7200) - 300
         return resp['access_token']
+    else:
+        current_app.logger.error(f'[WEWORK] get_token failed: {resp}')
     return None
 
 
 def _get_wework_user_id(code):
     token = _get_wework_access_token()
     if not token:
-        return None
+        return None, 'get_token_failed'
     url = f'https://qyapi.weixin.qq.com/cgi-bin/auth/getuserinfo?access_token={token}&code={code}'
     resp = http_requests.get(url, timeout=10).json()
     if resp.get('errcode') == 0:
-        return resp.get('userid') or resp.get('user_info', {}).get('userid')
-    return None
+        userid = resp.get('userid') or resp.get('user_info', {}).get('userid')
+        return userid, None
+    else:
+        current_app.logger.error(f'[WEWORK] getuserinfo failed: {resp}')
+        return None, resp.get('errmsg', 'unknown_error')
 
 
 def _get_wework_user_detail(userid):
@@ -46,6 +51,8 @@ def _get_wework_user_detail(userid):
     resp = http_requests.get(url, timeout=10).json()
     if resp.get('errcode') == 0:
         return resp
+    else:
+        current_app.logger.error(f'[WEWORK] get_user_detail failed: {resp}')
     return None
 
 
@@ -53,7 +60,7 @@ def _get_wework_user_detail(userid):
 def login():
     code = request.args.get('code')
     if code and request.method == 'GET':
-        userid = _get_wework_user_id(code)
+        userid, err = _get_wework_user_id(code)
         if userid:
             user = User.query.filter_by(username=userid).first()
             if not user:
@@ -70,6 +77,8 @@ def login():
             login_user(user, remember=True)
             next_page = request.args.get('state') or '/'
             return redirect(next_page)
+        else:
+            flash(f'OAuth login failed: {err}', 'error')
 
     if request.method == 'POST':
         username = request.form.get('username')
@@ -78,16 +87,16 @@ def login():
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             return redirect(url_for('quote.index'))
-        flash('用户名或密码错误', 'error')
+        flash('Username or password incorrect', 'error')
     return render_template('auth/login.html')
 
 
 @auth_bp.route('/wework')
 def wework_login():
-    corp_id = current_app.config['WEWORK_CORP_ID']
+    corp_id = current_app.config['WEWORK_CORPID']
     agent_id = current_app.config['WEWORK_AGENT_ID']
     redirect_uri = 'https://baojia.kuajing.space/auth/login'
-    redirect_uri_encoded = urllib.parse.quote(redirect_uri, safe='')
+    redirect_uri_encoded = urllib.quote(redirect_uri, safe='')
     state = request.args.get('next', '/')
     url = f'https://open.weixin.qq.com/connect/oauth2/authorize?appid={corp_id}&redirect_uri={redirect_uri_encoded}&response_type=code&scope=snsapi_privateinfo&agentid={agent_id}&state={state}#wechat_redirect'
     return redirect(url)
