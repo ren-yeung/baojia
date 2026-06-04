@@ -27,6 +27,7 @@ def create():
         data = request.get_json(silent=True) or request.form
 
         brand_id = int(data.get('brand_id'))
+        brand = Brand.query.get(brand_id)
         customer_name = data.get('customer_name', '').strip()
         fr_company = data.get('fr_company', '').strip()
         sales_name = data.get('sales_name', '').strip()
