@@ -28,11 +28,11 @@
     <div class="card-title">② 基本信息</div>
     <div class="form-group">
         <label class="form-label">To 客户名称 <span class="required">*</span></label>
-        <input type="text" id="customer_name" class="form-input" placeholder="如：佛山深盾智能科技有限公司">
+        <input type="text" id="customer_name" class="form-input" placeholder="如：佛山XXX科技有限公司">
     </div>
     <div class="form-group">
-        <label class="form-label">Fr 报价方</label>
-        <input type="text" id="fr_company" class="form-input" placeholder="选择品牌后显示">
+        <label class="form-label">Fr 报价方 <span class="required">*</span></label>
+        <input type="text" id="fr_company" class="form-input" placeholder="如：广东天耘科技有限公司">
     </div>
     <div class="form-group">
         <label class="form-label">报价日期</label>
@@ -104,7 +104,7 @@ function addItem() {
         <div class="item-row">
             <div class="item-field">
                 <label>服务内容</label>
-                <input type="text" name="service_name" placeholder="如：美国定位加速服务">
+                <input type="text" name="service_name" placeholder="如：美国定向加速">
             </div>
         </div>
         <div class="item-row">
@@ -130,7 +130,7 @@ function addItem() {
         <div class="item-row">
             <div class="item-field">
                 <label>备注</label>
-                <input type="text" name="remark" placeholder="选填">
+                <input type="text" name="remark" placeholder="如：5m适合3人使用">
             </div>
         </div>
     </div>`;
@@ -182,12 +182,16 @@ function getItemsData() {
 
 function submitQuote() {
     const customerName = document.getElementById('customer_name').value.trim();
+    const frCompany = document.getElementById('fr_company').value.trim();
     if (!selectedBrandId) { showToast('请选择报价品牌'); return; }
     if (!customerName) { showToast('请填写客户名称'); return; }
+    if (!frCompany) { showToast('请填写报价方'); return; }
 
     const items = getItemsData();
     if (items.length === 0) { showToast('请添加至少一条服务明细'); return; }
-    if (!items[0].service_name) { showToast('请填写服务内容'); return; }
+    for (let i = 0; i < items.length; i++) {
+        if (!items[i].service_name) { showToast(`请填写第${i+1}条明细的服务内容`); return; }
+    }
 
     const data = {
         brand_id: selectedBrandId,
