@@ -16,7 +16,7 @@ def _get_wework_access_token():
     now = time.time()
     if _wework_token_cache['token'] and _wework_token_cache['expires_at'] > now:
         return _wework_token_cache['token']
-    corp_id = current_app.config['WEWORK_CORPID']
+    corp_id = current_app.config['WEWORK_CORP_ID']
     secret = current_app.config['WEWORK_SECRET']
     url = f'https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={corp_id}&corpsecret={secret}'
     resp = http_requests.get(url, timeout=10).json()
@@ -93,7 +93,7 @@ def login():
 
 @auth_bp.route('/wework')
 def wework_login():
-    corp_id = current_app.config['WEWORK_CORPID']
+    corp_id = current_app.config['WEWORK_CORP_ID']
     agent_id = current_app.config['WEWORK_AGENT_ID']
     redirect_uri = 'https://baojia.kuajing.space/auth/login'
     redirect_uri_encoded = urllib.quote(redirect_uri, safe='')
