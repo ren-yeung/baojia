@@ -14,7 +14,7 @@ body { font-family: "PingFang SC", "Microsoft YaHei", "SimHei", sans-serif; font
 
 .info-section { margin-bottom: 20px; }
 .info-row { display: flex; margin-bottom: 6px; font-size: 13px; line-height: 1.8; }
-.info-label { font-weight: bold; min-width: 90px; color: #333; }
+.info-label { font-weight: bold; color: #333; margin-right: 4px; }
 .info-value { color: #333; }
 
 table { width: 100%; border-collapse: collapse; margin-bottom: 10px; table-layout: fixed; }
@@ -42,7 +42,7 @@ tr.total-row td { background: #f0f4f8; font-weight: bold; font-size: 13px; }
     </div>
     <div class="info-row">
         <span class="info-label">Fr：</span>
-        <span class="info-value">{{ brand.fr_company }}</span>
+        <span class="info-value">{{ quote.fr_company }}</span>
     </div>
     <div class="info-row">
         <span class="info-label">报价有效期：</span>
@@ -90,10 +90,6 @@ tr.total-row td { background: #f0f4f8; font-weight: bold; font-size: 13px; }
             {% endif %}
         </tr>
         {% endfor %}
-        <tr class="total-row">
-            <td colspan="3" style="text-align:right; font-weight:bold;">合计</td>
-            <td colspan="3" style="text-align:center; color:#1a365d; font-size:14px;">{{ total | format_price }}</td>
-        </tr>
     </tbody>
 </table>
 

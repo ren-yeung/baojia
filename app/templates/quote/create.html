@@ -10,7 +10,7 @@
     <div class="card-title">① 选择报价品牌</div>
     <div class="brand-grid">
         {% for brand in brands %}
-        <div class="brand-card" data-brand-id="{{ brand.id }}" onclick="selectBrand(this, {{ brand.id }}, '{{ brand.fr_company }}', '{{ brand.validity }}', {{ brand.default_period }})">
+        <div class="brand-card" data-brand-id="{{ brand.id }}" onclick="selectBrand(this, {{ brand.id }}, '{{ brand.fr_company }}', '{{ brand.validity }}', {{ brand.default_period }})" data-fr-placeholder="如：{{ brand.fr_company }}">
             <div style="position:relative;">
                 <div class="check-mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg></div>
             </div>
@@ -32,7 +32,7 @@
     </div>
     <div class="form-group">
         <label class="form-label">Fr 报价方</label>
-        <input type="text" id="fr_company" class="form-input" readonly style="background:var(--gray-50);color:var(--gray-600);">
+        <input type="text" id="fr_company" class="form-input" placeholder="选择品牌后显示">
     </div>
     <div class="form-group">
         <label class="form-label">报价日期</label>
@@ -76,7 +76,9 @@ function selectBrand(el, brandId, frCompany, validity, defaultPeriod) {
     document.querySelectorAll('.brand-card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
     selectedBrandId = brandId;
-    document.getElementById('fr_company').value = frCompany;
+    const frInput = document.getElementById('fr_company');
+    frInput.value = frCompany;
+    frInput.placeholder = el.dataset.frPlaceholder;
     document.getElementById('validity').value = validity;
     window._defaultPeriod = defaultPeriod;
     // 显示下一步
@@ -190,6 +192,7 @@ function submitQuote() {
     const data = {
         brand_id: selectedBrandId,
         customer_name: customerName,
+        fr_company: document.getElementById('fr_company').value.trim(),
         sales_name: document.getElementById('sales_name').value.trim(),
         quote_date: document.getElementById('quote_date').value,
         validity: document.getElementById('validity').value.trim(),

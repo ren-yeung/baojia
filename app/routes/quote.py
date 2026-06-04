@@ -28,6 +28,7 @@ def create():
 
         brand_id = int(data.get('brand_id'))
         customer_name = data.get('customer_name', '').strip()
+        fr_company = data.get('fr_company', '').strip()
         sales_name = data.get('sales_name', '').strip()
         quote_date_str = data.get('quote_date', date.today().isoformat())
         validity = data.get('validity', '30个自然日')
@@ -42,6 +43,7 @@ def create():
         quote = Quote(
             quote_no=quote_no,
             brand_id=brand_id,
+            fr_company=fr_company or brand.fr_company,
             customer_name=customer_name,
             sales_name=sales_name or (current_user.display_name if current_user else ''),
             quote_date=quote_date,

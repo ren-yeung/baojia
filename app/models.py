@@ -36,6 +36,7 @@ class Quote(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quote_no = db.Column(db.String(30), unique=True, nullable=False)
     brand_id = db.Column(db.Integer, db.ForeignKey('brand.id'), nullable=False)
+    fr_company = db.Column(db.String(200))
     customer_name = db.Column(db.String(200), nullable=False)
     sales_name = db.Column(db.String(80))
     quote_date = db.Column(db.Date, nullable=False)
