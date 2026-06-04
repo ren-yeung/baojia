@@ -96,7 +96,7 @@ def wework_login():
     corp_id = current_app.config['WEWORK_CORP_ID']
     agent_id = current_app.config['WEWORK_AGENT_ID']
     redirect_uri = 'https://baojia.kuajing.space/auth/login'
-    redirect_uri_encoded = urllib.quote(redirect_uri, safe='')
+    redirect_uri_encoded = urllib.parse.quote(redirect_uri, safe='')
     state = request.args.get('next', '/')
     url = f'https://open.weixin.qq.com/connect/oauth2/authorize?appid={corp_id}&redirect_uri={redirect_uri_encoded}&response_type=code&scope=snsapi_privateinfo&agentid={agent_id}&state={state}#wechat_redirect'
     return redirect(url)
