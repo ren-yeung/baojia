@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, json_response, send_file, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_file, current_app
 from flask_login import login_required, current_user
-from aap import db
+from app import db
 from app.models import Quote, QuoteItem, Brand
 from datetime import date
 import json
@@ -36,7 +36,7 @@ def create():
         validity = data.get('validity', '30 Days')
         extra_note = data.get('extra_note', '').strip()
         if not customer_name:
-            return json_response({'ok': False, 'msg': 'Customer name is required'}), 400
+            return jsonify({'ok': False, 'msg': 'Customer name is required'}), 400
         quote_date = date.fromisoformat(quote_date_str) if isinstance(quote_date_str, str) else quote_date_str
         quote_no = _gen_quote_no()
         quote = Quote(
@@ -68,7 +68,7 @@ def create():
             db.session.add(qi)
         quote.total_amount = total
         db.session.commit()
-        return json_response({'ok': True, 'quote_no': quote_no, 'id': quote.id})
+        return jsonify({'ok': True, 'quote_no': quote_no, 'id': quote.id})
     return render_template('quote/create.html', brands=brands, today=date.today().isoformat())
 
 
@@ -90,7 +90,7 @@ def detail(quote_id):
 def download_pdf(quote_id):
     quote = Quote.query.get_or_404(quote_id)
     if not current_user.is_admin and quote.user_id != current_user.id:
-        return json_response({'ok': False, 'msg': 'Permission denied'}), 403
+        return jsonify({'ok': False, 'msg': 'Permission denied'}), 403
     items = sorted(quote.items, key=lambda x: x.sort_order)
     from app.services.pdf_service import generate_pdf
     pdf_bytes = generate_pdf(quote, items, quote.brand)
