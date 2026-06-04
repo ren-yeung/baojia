@@ -48,7 +48,8 @@
         }
         .nav-bar .back { display: flex; align-items: center; gap: 4px; color: var(--brand); font-size: 15px; cursor: pointer; }
         .nav-bar .back svg { width: 20px; height: 20px; }
-        .nav-bar .title { font-size: 17px; font-weight: 600; color: var(--gray-900); }
+        .nav-bar .title { font-size: 17px; font-weight: 600; color: var(--gray-900); display: flex; align-items: center; gap: 8px; }
+        .nav-bar .title img { width: 32px; height: 32px; border-radius: 6px; }
         .nav-bar .action { font-size: 15px; color: var(--brand); font-weight: 500; cursor: pointer; }
 
         /* 页面容器 */
@@ -202,7 +203,7 @@
             <span>返回</span>
         </div>
         {% else %}
-        <div class="title">📝 报价系统</div>
+        <div class="title"><img src="/static/logo.jpg" alt="logo" style="width:28px;height:28px;border-radius:6px;vertical-align:middle;"> 报价系统</div>
         {% endif %}
         <div class="title">{% block nav_title %}{% endblock %}</div>
         {% block nav_right %}{% endblock %}
